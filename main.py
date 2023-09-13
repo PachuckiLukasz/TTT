@@ -1,104 +1,13 @@
 import pygame as pg
 import library as lib
+import drawing
 import sys
+
+import winner
 
 pg.init()
 
-font = pg.font.SysFont(None, 40)  # font
-
-play_again_rect = pg.Rect(lib.window_size // 2 - 85, lib.window_size // 2 + 20, 170, 30)
-
-
-def drawGrid():
-    for x in range(1, 3):
-        pg.draw.line(window, lib.GRID_COLOR, (0, x * lib.grid_size), (lib.window_size, x * lib.grid_size), lib.lineWidth)
-        pg.draw.line(window, lib.GRID_COLOR, (x * lib.grid_size, 0), (x * lib.grid_size, lib.window_size), lib.lineWidth)
-
-
-def prepare_grid():
-    global x
-    for x in range(3):
-        row = [0] * 3
-        lib.markers.append(row)
-
-
-prepare_grid()
-
-
-def drawMarkers():
-    x_pos = 0
-    for x in lib.markers:
-        y_pos = 0
-        for y in x:
-            if y == 1:  # Player 1's marker (X)
-                center_x = x_pos * lib.grid_size + lib.grid_size // 2
-                center_y = y_pos * lib.grid_size + lib.grid_size // 2
-                pg.draw.line(window, lib.P1_COLOR, (center_x - lib.markers_adj, center_y - lib.markers_adj),
-                             (center_x + lib.markers_adj, center_y + lib.markers_adj), lib.lineWidth)
-                pg.draw.line(window, lib.P1_COLOR, (center_x - lib.markers_adj, center_y + lib.markers_adj),
-                             (center_x + lib.markers_adj, center_y - lib.markers_adj), lib.lineWidth)
-            elif y == -1:  # Player 2's marker (O)
-                center_x = x_pos * lib.grid_size + lib.grid_size // 2
-                center_y = y_pos * lib.grid_size + lib.grid_size // 2
-                pg.draw.circle(window, lib.P2_COLOR, (center_x, center_y), lib.grid_size // 2 - lib.lineWidth, lib.lineWidth)
-            y_pos += 1
-        x_pos += 1
-
-
-def checkWinner():
-    if all(cell != 0 for row in lib.markers for cell in row):
-        lib.winner = 0
-        lib.game_over = True
-        return
-    y_pos = 0
-    for z in lib.markers:
-        # rows
-        if sum(z) == 3:
-            lib.winner = 1
-            lib.game_over = True
-        if sum(z) == -3:
-            lib.winner = 2
-            lib.game_over = True
-        # columns
-        if lib.markers[0][y_pos] + lib.markers[1][y_pos] + lib.markers[2][y_pos] == 3:
-            lib.winner = 1
-            lib.game_over = True
-        if lib.markers[0][y_pos] + lib.markers[1][y_pos] + lib.markers[2][y_pos] == -3:
-            lib.winner = 2
-            lib.game_over = True
-        y_pos += 1
-        # cross
-        if lib.markers[0][0] + lib.markers[1][1] + lib.markers[2][2] == 3 or lib.markers[2][0] + lib.markers[1][1] + lib.markers[0][2] == 3:
-            lib.winner = 1
-            lib.game_over = True
-        if lib.markers[0][0] + lib.markers[1][1] + lib.markers[2][2] == -3 or lib.markers[2][0] + lib.markers[1][1] + lib.markers[0][2] == -3:
-            lib.winner = 2
-            lib.game_over = True
-
-
-def printWinner(winner):
-    win_text = ""
-    if lib.winner == 0:
-        win_text = "It's a draw!"
-        win_img = font.render(win_text, True, lib.FONT_COLOR)
-        pg.draw.rect(window, lib.WINNER_BG_COLOR,
-                     (lib.window_size // 2 - 100, lib.window_size // 2 - 15, 200, 30))  # Center the text on the screen
-        window.blit(win_img, (lib.window_size // 2 - 100, lib.window_size // 2 - 15))
-    else:
-        win_text = "Player " + str(winner) + " wins"
-        win_img = font.render(win_text, True, lib.FONT_COLOR)
-        pg.draw.rect(window, lib.WINNER_BG_COLOR,
-                     (lib.window_size // 2 - 100, lib.window_size // 2 - 15, 200, 30))  # Center the text on the screen
-        window.blit(win_img, (lib.window_size // 2 - 100, lib.window_size // 2 - 15))
-
-    play_again_str = "Play again?"
-    play_again_img = font.render(play_again_str, True, lib.FONT_COLOR)
-    pg.draw.rect(window, lib.WINNER_BG_COLOR, play_again_rect)
-    window.blit(play_again_img, (lib.window_size // 2 - 85, lib.window_size // 2 + 20, 170, 30))
-
-
-window = pg.display.set_mode((lib.window_size, lib.window_size))
-pg.display.set_caption("TIC TAC TOE")
+drawing.prepare_grid()
 
 while lib.running:
     for event in pg.event.get():
@@ -115,17 +24,17 @@ while lib.running:
                 if lib.markers[cell_x // lib.grid_size][cell_y // lib.grid_size] == 0:
                     lib.markers[cell_x // lib.grid_size][cell_y // lib.grid_size] = lib.player
                     lib.player *= -1
-                    checkWinner()
+                    winner.checkWinner()
 
     if lib.game_over:
-        printWinner(lib.winner)
+        drawing.printWinner(lib.winner)
         # check does user clicked on play again rect
         if event.type == pg.MOUSEBUTTONDOWN and not lib.clicked:
             lib.clicked = True
         if event.type == pg.MOUSEBUTTONUP and lib.clicked:
             lib.clicked = False
             lib.pos = pg.mouse.get_pos()
-            if play_again_rect.collidepoint(lib.pos):
+            if drawing.play_again_rect.collidepoint(lib.pos):
                 # reset var
                 lib.markers = []
                 lib.pos = []
@@ -138,11 +47,11 @@ while lib.running:
 
     pg.display.update()
     # clear the screen
-    window.fill((208, 219, 121))  # fill with background
+    drawing.window.fill((208, 219, 121))  # fill with background
 
     # draw the game objects here
-    drawGrid()
-    drawMarkers()
+    drawing.drawGrid()
+    drawing.drawMarkers()
 
 # after the loop close the pygame and quit game
 pg.quit()
