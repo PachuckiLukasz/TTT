@@ -25,6 +25,11 @@ while lib.running:
                     lib.markers[cell_x // lib.grid_size][cell_y // lib.grid_size] = lib.player
                     lib.player *= -1
                     winner.checkWinner()
+            if not lib.game_over and lib.player == -1:  # AI's turn
+                ai_row, ai_col = winner.ai_random_move()
+                lib.markers[ai_row][ai_col] = lib.player
+                lib.player = 1  # Switch back to the human player's turn
+                winner.checkWinner()
 
     if lib.game_over:
         drawing.printWinner(lib.winner)

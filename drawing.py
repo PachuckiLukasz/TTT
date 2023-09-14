@@ -58,6 +58,7 @@ def printWinner(winner):
     pg.draw.rect(window, lib.WINNER_BG_COLOR, play_again_rect)
     window.blit(play_again_img, (lib.window_size // 2 - 85, lib.window_size // 2 + 20, 170, 30))
 
+
 pg.init()
 
 font = pg.font.SysFont(None, 40)  # font
